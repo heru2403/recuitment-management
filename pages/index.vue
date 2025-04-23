@@ -84,10 +84,18 @@ onUnmounted(() => {
         <span class="text-xl md:text-2xl font-redressed cursor-pointer hover:text-[#4491f0] transition-colors" @click="scrollToSection('proses')">Proses Rekrutmen</span>
         <span class="text-xl md:text-2xl font-redressed cursor-pointer hover:text-[#4491f0] transition-colors" @click="scrollToSection('testimoni')">Testimoni</span>
         <span class="text-xl md:text-2xl font-redressed cursor-pointer hover:text-[#4491f0] transition-colors" @click="scrollToSection('kontak')">Kontak</span>
-        <button class="bg-[#4491f0] text-white text-xl md:text-2xl px-6 py-2 rounded-lg font-redressed hover:bg-[#174e65] transition-colors shadow-md"
-          @click="scrollToSection('lowongan')">
-          Daftar Sekarang
-        </button>
+        
+        <!-- Login/Register Buttons -->
+        <div class="flex items-center space-x-4">
+          <button class="text-[#174e65] text-xl md:text-2xl px-4 py-2 rounded-lg font-redressed hover:bg-gray-100 transition-colors"
+            @click="openModal">
+            Login
+          </button>
+          <button class="bg-[#4491f0] text-white text-xl md:text-2xl px-6 py-2 rounded-lg font-redressed hover:bg-[#174e65] transition-colors shadow-md"
+            @click="scrollToSection('lowongan')">
+            Daftar Sekarang
+          </button>
+        </div>
       </div>
       
       <!-- Mobile menu button -->
@@ -105,10 +113,18 @@ onUnmounted(() => {
           <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('proses'); closeModal()">Proses Rekrutmen</span>
           <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('testimoni'); closeModal()">Testimoni</span>
           <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('kontak'); closeModal()">Kontak</span>
-          <button class="bg-[#4491f0] text-white text-2xl px-6 py-3 rounded-lg font-redressed mt-4 hover:bg-[#174e65] transition-colors shadow-md"
-            @click="scrollToSection('lowongan'); closeModal()">
-            Daftar Sekarang
-          </button>
+          
+          <!-- Login/Register Buttons for Mobile -->
+          <div class="flex flex-col space-y-4 pt-4">
+            <button class="text-[#174e65] text-2xl px-6 py-3 rounded-lg font-redressed border border-[#174e65] hover:bg-gray-100 transition-colors"
+              @click="openModal; closeModal()">
+              Login
+            </button>
+            <button class="bg-[#4491f0] text-white text-2xl px-6 py-3 rounded-lg font-redressed hover:bg-[#174e65] transition-colors shadow-md"
+              @click="scrollToSection('lowongan'); closeModal()">
+              Daftar Sekarang
+            </button>
+          </div>
         </div>
         <button class="mt-6 text-[#174e65] font-semibold w-full text-xl hover:underline" @click="closeModal">Tutup</button>
       </div>
@@ -419,8 +435,8 @@ onUnmounted(() => {
           <div>
             <h3 class="text-2xl font-redressed mb-4">Jam Kerja</h3>
             <p class="font-redressed">Senin - Jumat: 09.00 - 17.00 WIB</p>
-            <p class="font-redressed">Sabtu: 09.00 - 13.00 WIB</p>
-            <p class="font-redressed">Minggu: Tutup</p>
+            <p class="font-redressed">Sabtu - Minggu : Tutup </p>
+            
           </div> 
         </div>
         <div class="text-center mt-12">
@@ -431,4 +447,3 @@ onUnmounted(() => {
     </footer>
   </div>
 </template>
-<script setup></script>

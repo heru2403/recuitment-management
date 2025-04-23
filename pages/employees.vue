@@ -1,0 +1,429 @@
+<template>
+  <div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <aside
+      :class="[
+        'fixed h-full bg-blue-800 text-white z-50 transition-all duration-300 overflow-hidden',
+        sidebarCollapsed ? 'w-16' : 'w-64'
+      ]"
+    >
+      <!-- Header with toggle button -->
+      <div
+        class="flex items-center justify-between p-4 bg-blue-900 border-b border-blue-700"
+        :class="{ 'justify-center': sidebarCollapsed }"
+      >
+        <h4 v-if="!sidebarCollapsed" class="text-xl font-bold">HRD Portal</h4>
+        <button
+          @click="toggleSidebar"
+          aria-label="Toggle sidebar"
+          class="text-white focus:outline-none"
+        >
+          <svg
+            v-if="sidebarCollapsed"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="p-2">
+        <ul class="space-y-2">
+          <li v-for="item in menuItems" :key="item.text">
+            <NuxtLink
+              :to="item.to"
+              class="flex items-center p-3 rounded hover:bg-blue-700 transition-colors"
+              :class="{ 'bg-blue-700': $route.path === item.to }"
+            >
+              <font-awesome-icon :icon="item.icon" class="w-5" />
+              <span v-if="!sidebarCollapsed" class="ml-3">{{ item.text }}</span>
+            </NuxtLink>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <header class="bg-white shadow-sm">
+        <div class="flex items-center justify-end px-4 py-3 sm:px-6 lg:px-8">
+          <div class="flex items-center space-x-4">
+            <!-- Notification -->
+            <button class="p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
+              <span class="sr-only">Notifications</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+            </button>
+            
+            <!-- User Profile -->
+            <div class="flex items-center">
+              <div class="ml-3 relative">
+                <div class="flex items-center">
+                  <img
+                    class="h-8 w-8 rounded-full object-cover"
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    alt="User profile"
+                  />
+                  <span class="ml-2 text-sm font-medium text-gray-700">Admin HRD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Main content - Employee Management -->
+      <main class="flex-1 overflow-y-auto p-4" :class="{ 'ml-16': sidebarCollapsed, 'ml-64': !sidebarCollapsed }">
+        <div class="p-6 bg-white rounded-lg shadow">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Manajemen Karyawan</h2>
+            <div class="flex space-x-3">
+              <button 
+                @click="showAddEmployeeModal = true"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
+              >
+                <font-awesome-icon icon="user-plus" class="mr-2" />
+                Tambah Karyawan
+              </button>
+              <button 
+                @click="exportToExcel"
+                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center"
+              >
+                <font-awesome-icon icon="file-export" class="mr-2" />
+                Export Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-4 flex justify-between items-center">
+            <div class="relative w-64">
+              <input 
+                v-model="searchQuery"
+                type="text" 
+                placeholder="Cari karyawan..." 
+                class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <font-awesome-icon icon="search" class="absolute left-3 top-3 text-gray-400" />
+            </div>
+            <div>
+              <select v-model="departmentFilter" class="border rounded p-2">
+                <option value="">Semua Departemen</option>
+                <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departemen</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posisi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="employee in filteredEmployees" :key="employee.id">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <img class="h-10 w-10 rounded-full" :src="employee.photo || 'https://via.placeholder.com/40'" alt="">
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">{{ employee.name }}</div>
+                        <div class="text-sm text-gray-500">{{ employee.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ employee.nik }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ employee.department }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ employee.position }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="statusClass(employee.status)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                      {{ employee.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button @click="viewEmployee(employee.id)" class="text-blue-600 hover:text-blue-900 mr-3">Detail</button>
+                    <button @click="editEmployee(employee.id)" class="text-yellow-600 hover:text-yellow-900 mr-3">Edit</button>
+                    <button @click="confirmTerminate(employee.id)" class="text-red-600 hover:text-red-900">Terminate</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="mt-4 flex justify-between items-center">
+            <div class="text-sm text-gray-500">
+              Menampilkan {{ filteredEmployees.length }} dari {{ employees.length }} karyawan
+            </div>
+            <div class="flex space-x-1">
+              <button 
+                @click="currentPage--" 
+                :disabled="currentPage === 1"
+                class="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button 
+                v-for="page in totalPages" 
+                :key="page"
+                @click="currentPage = page"
+                :class="{'bg-blue-600 text-white': currentPage === page}"
+                class="px-3 py-1 border rounded"
+              >
+                {{ page }}
+              </button>
+              <button 
+                @click="currentPage++" 
+                :disabled="currentPage === totalPages"
+                class="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Employee Modal -->
+          <EmployeeFormModal 
+            v-if="showAddEmployeeModal"
+            :employee="editingEmployee"
+            @close="showAddEmployeeModal = false"
+            @save="handleSaveEmployee"
+          />
+        </div>
+      </main>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref, computed } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+interface Employee {
+  id: number
+  nik: string
+  name: string
+  email: string
+  department: string
+  position: string
+  status: string
+  joinDate: string
+  photo?: string
+}
+
+interface MenuItem {
+  text: string
+  to: string
+  icon: string
+}
+
+export default defineComponent({
+  name: 'EmployeeManagementLayout',
+  components: {
+    FontAwesomeIcon
+  },
+  setup() {
+    // Sidebar state
+    const sidebarCollapsed = ref(false)
+    const toggleSidebar = () => {
+      sidebarCollapsed.value = !sidebarCollapsed.value
+    }
+
+    // Menu items
+    const menuItems: MenuItem[] = [
+      { text: 'Dashboard', to: '/dashboard-hrd', icon: 'tachometer-alt' },
+      { text: 'Rekrutmen', to: '/recruitment', icon: 'user-plus' },
+      { text: 'Karyawan', to: '/employees', icon: 'users' },
+      { text: 'Absensi', to: '/attendance', icon: 'calendar-alt' },
+      { text: 'Penggajian', to: '/payroll', icon: 'file-invoice-dollar' },
+      { text: 'Laporan', to: '/reports', icon: 'chart-bar' },
+      { text: 'Logout', to: '/logout', icon: 'sign-out-alt' },
+    ]
+
+    // Employee management state
+    const departments = ['IT', 'HR', 'Finance', 'Marketing', 'Operations']
+    const positions = ['Manager', 'Supervisor', 'Staff', 'Intern']
+
+    const employees = ref<Employee[]>([
+      {
+        id: 1,
+        nik: 'EMP001',
+        name: 'Budi Santoso',
+        email: 'budi.santoso@company.com',
+        department: 'IT',
+        position: 'Frontend Developer',
+        status: 'Active',
+        joinDate: '2020-05-15',
+        photo: 'https://randomuser.me/api/portraits/men/1.jpg'
+      },
+      {
+        id: 2,
+        nik: 'EMP002',
+        name: 'Ani Wijaya',
+        email: 'ani.wijaya@company.com',
+        department: 'HR',
+        position: 'HR Manager',
+        status: 'Active',
+        joinDate: '2019-08-10',
+        photo: 'https://randomuser.me/api/portraits/women/1.jpg'
+      },
+      {
+        id: 3,
+        nik: 'EMP003',
+        name: 'Cahyo Pratama',
+        email: 'cahyo.pratama@company.com',
+        department: 'Finance',
+        position: 'Finance Staff',
+        status: 'Active',
+        joinDate: '2021-02-20',
+        photo: 'https://randomuser.me/api/portraits/men/2.jpg'
+      }
+    ])
+
+    const showAddEmployeeModal = ref(false)
+    const editingEmployee = ref<Employee | null>(null)
+    const searchQuery = ref('')
+    const departmentFilter = ref('')
+    const currentPage = ref(1)
+    const itemsPerPage = 10
+
+    const filteredEmployees = computed(() => {
+      let result = employees.value
+      
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase()
+        result = result.filter(e => 
+          e.name.toLowerCase().includes(query) || 
+          e.nik.toLowerCase().includes(query) ||
+          e.email.toLowerCase().includes(query)
+        )
+      }
+      
+      if (departmentFilter.value) {
+        result = result.filter(e => e.department === departmentFilter.value)
+      }
+      
+      return result
+    })
+
+    const totalPages = computed(() => {
+      return Math.ceil(filteredEmployees.value.length / itemsPerPage)
+    })
+
+    const statusClass = (status: string) => {
+      return status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+    }
+
+    const exportToExcel = () => {
+      console.log('Exporting to Excel...')
+      alert('Data karyawan telah diexport ke Excel')
+    }
+
+    const viewEmployee = (id: number) => {
+      console.log('View employee:', id)
+    }
+
+    const editEmployee = (id: number) => {
+      const employee = employees.value.find(e => e.id === id)
+      if (employee) {
+        editingEmployee.value = {...employee}
+        showAddEmployeeModal.value = true
+      }
+    }
+
+    const confirmTerminate = (id: number) => {
+      if (confirm('Apakah Anda yakin ingin mengakhiri kontrak karyawan ini?')) {
+        const index = employees.value.findIndex(e => e.id === id)
+        if (index !== -1) {
+          employees.value[index].status = 'Terminated'
+        }
+      }
+    }
+
+    const handleSaveEmployee = (employeeData: Employee) => {
+      if (employeeData.id) {
+        // Update existing employee
+        const index = employees.value.findIndex(e => e.id === employeeData.id)
+        if (index !== -1) {
+          employees.value[index] = employeeData
+        }
+      } else {
+        // Add new employee
+        const newId = employees.value.length > 0 
+          ? Math.max(...employees.value.map(e => e.id)) + 1 
+          : 1
+        employees.value.push({
+          ...employeeData,
+          id: newId,
+          nik: `EMP${String(newId).padStart(3, '0')}`
+        })
+      }
+      
+      showAddEmployeeModal.value = false
+      editingEmployee.value = null
+    }
+
+    return {
+      sidebarCollapsed,
+      toggleSidebar,
+      menuItems,
+      employees,
+      departments,
+      positions,
+      showAddEmployeeModal,
+      editingEmployee,
+      searchQuery,
+      departmentFilter,
+      currentPage,
+      itemsPerPage,
+      filteredEmployees,
+      totalPages,
+      statusClass,
+      exportToExcel,
+      viewEmployee,
+      editEmployee,
+      confirmTerminate,
+      handleSaveEmployee
+    }
+  }
+})
+</script>
