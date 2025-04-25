@@ -1,74 +1,3 @@
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-
-const showModal = ref(false);
-const countdown = ref('5 Hari 00:00:00');
-const intervalId = ref(null);
-const currentTime = ref('');
-const currentDate = ref('');
-
-// Scroll ke section
-function scrollToSection(refName) {
-  const el = document.getElementById(refName);
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
-
-// Modal
-function openModal() {
-  showModal.value = true;
-}
-function closeModal() {
-  showModal.value = false;
-}
-
-// Countdown logic (3-5 days)
-function startCountdown() {
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() + 5); // 5 days from now
-  
-  intervalId.value = setInterval(() => {
-    const now = new Date();
-    const diff = endDate - now;
-    
-    if (diff <= 0) {
-      countdown.value = '00:00:00';
-      clearInterval(intervalId.value);
-      return;
-    }
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    countdown.value = `${days} Hari ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  }, 1000);
-}
-
-// Real time clock
-function updateClock() {
-  const now = new Date();
-  const options = { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  };
-  currentTime.value = now.toLocaleTimeString();
-  currentDate.value = now.toLocaleDateString('id-ID', options);
-}
-
-onMounted(() => {
-  startCountdown();
-  updateClock();
-  setInterval(updateClock, 1000);
-});
-
-onUnmounted(() => {
-  clearInterval(intervalId.value);
-});
-</script>
-
 <template>
   <div class="min-h-screen bg-gradient-to-b from-[#174e65] to-[#5fa7ff]">
     <!-- Navigation -->
@@ -87,10 +16,9 @@ onUnmounted(() => {
         
         <!-- Login/Register Buttons -->
         <div class="flex items-center space-x-4">
-          <button class="text-[#174e65] text-xl md:text-2xl px-4 py-2 rounded-lg font-redressed hover:bg-gray-100 transition-colors"
-            @click="openModal">
+          <NuxtLink to="/login" class="text-[#174e65] text-xl md:text-2xl px-4 py-2 rounded-lg font-redressed hover:bg-gray-100 transition-colors">
             Login
-          </button>
+          </NuxtLink>
           <button class="bg-[#4491f0] text-white text-xl md:text-2xl px-6 py-2 rounded-lg font-redressed hover:bg-[#174e65] transition-colors shadow-md"
             @click="scrollToSection('lowongan')">
             Daftar Sekarang
@@ -99,34 +27,34 @@ onUnmounted(() => {
       </div>
       
       <!-- Mobile menu button -->
-      <button class="md:hidden text-3xl focus:outline-none" @click="openModal">
+      <button class="md:hidden text-3xl focus:outline-none" @click="showMobileMenu = true">
         ☰
       </button>
     </nav>
 
     <!-- Mobile Menu Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:hidden">
+    <div v-if="showMobileMenu" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:hidden">
       <div class="bg-white rounded-lg p-8 w-[90vw] max-w-md shadow-xl">
         <div class="flex flex-col space-y-6">
-          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('tentang'); closeModal()">Tentang Kami</span>
-          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('lowongan'); closeModal()">Lowongan</span>
-          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('proses'); closeModal()">Proses Rekrutmen</span>
-          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('testimoni'); closeModal()">Testimoni</span>
-          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('kontak'); closeModal()">Kontak</span>
+          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('tentang'); showMobileMenu = false">Tentang Kami</span>
+          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('lowongan'); showMobileMenu = false">Lowongan</span>
+          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('proses'); showMobileMenu = false">Proses Rekrutmen</span>
+          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('testimoni'); showMobileMenu = false">Testimoni</span>
+          <span class="text-2xl font-redressed cursor-pointer hover:text-[#4491f0]" @click="scrollToSection('kontak'); showMobileMenu = false">Kontak</span>
           
           <!-- Login/Register Buttons for Mobile -->
           <div class="flex flex-col space-y-4 pt-4">
-            <button class="text-[#174e65] text-2xl px-6 py-3 rounded-lg font-redressed border border-[#174e65] hover:bg-gray-100 transition-colors"
-              @click="openModal; closeModal()">
+            <NuxtLink to="/login" class="text-[#174e65] text-2xl px-6 py-3 rounded-lg font-redressed border border-[#174e65] hover:bg-gray-100 transition-colors text-center"
+              @click="showMobileMenu = false">
               Login
-            </button>
+            </NuxtLink>
             <button class="bg-[#4491f0] text-white text-2xl px-6 py-3 rounded-lg font-redressed hover:bg-[#174e65] transition-colors shadow-md"
-              @click="scrollToSection('lowongan'); closeModal()">
+              @click="scrollToSection('lowongan'); showMobileMenu = false">
               Daftar Sekarang
             </button>
           </div>
         </div>
-        <button class="mt-6 text-[#174e65] font-semibold w-full text-xl hover:underline" @click="closeModal">Tutup</button>
+        <button class="mt-6 text-[#174e65] font-semibold w-full text-xl hover:underline" @click="showMobileMenu = false">Tutup</button>
       </div>
     </div>
 
@@ -182,10 +110,9 @@ onUnmounted(() => {
                 <span class="ml-2 text-lg font-redressed">Full-time</span>
               </div>
             </div>
-            <button class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md"
-              @click="openModal">
+            <NuxtLink to="/login?position=frontend" class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md text-center block">
               Lamar Sekarang
-            </button>
+            </NuxtLink>
           </div>
           
           <!-- Job Card 2 -->
@@ -207,10 +134,9 @@ onUnmounted(() => {
                 <span class="ml-2 text-lg font-redressed">Full-time</span>
               </div>
             </div>
-            <button class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md"
-              @click="openModal">
+            <NuxtLink to="/login?position=backend" class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md text-center block">
               Lamar Sekarang
-            </button>
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -332,54 +258,6 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- Application Form Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-2xl font-redressed text-[#174e65]">Formulir Pendaftaran</h3>
-          <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <form @submit.prevent="closeModal" class="space-y-4">
-          <div>
-            <label class="block text-gray-700 font-redressed mb-1">Nama Lengkap</label>
-            <input type="text" placeholder="Nama Anda" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#174e65] focus:border-transparent font-redressed" required />
-          </div>
-          <div>
-            <label class="block text-gray-700 font-redressed mb-1">Email</label>
-            <input type="email" placeholder="email@contoh.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#174e65] focus:border-transparent font-redressed" required />
-          </div>
-          <div>
-            <label class="block text-gray-700 font-redressed mb-1">Nomor Telepon</label>
-            <input type="tel" placeholder="08123456789" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#174e65] focus:border-transparent font-redressed" required />
-          </div>
-          <div>
-            <label class="block text-gray-700 font-redressed mb-1">Posisi</label>
-            <select class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#174e65] focus:border-transparent font-redressed" required>
-              <option value="">Pilih Posisi</option>
-              <option value="frontend">Frontend Developer</option>
-              <option value="backend">Backend Developer</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-700 font-redressed mb-1">Upload CV (PDF, max 5MB)</label>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-              <input type="file" accept=".pdf" class="hidden" id="cv-upload" required />
-              <label for="cv-upload" class="cursor-pointer text-[#174e65] font-redressed hover:underline">
-                Klik untuk upload CV
-              </label>
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-[#174e65] text-white px-6 py-3 rounded-lg font-redressed hover:bg-[#0d3648] transition-colors shadow-md mt-6">
-            Kirim Aplikasi
-          </button>
-        </form>
-      </div>
-    </div>
-
     <!-- Footer -->
     <footer class="bg-[#174e65] text-white py-12 px-4" id="kontak">
       <div class="container mx-auto">
@@ -435,8 +313,7 @@ onUnmounted(() => {
           <div>
             <h3 class="text-2xl font-redressed mb-4">Jam Kerja</h3>
             <p class="font-redressed">Senin - Jumat: 09.00 - 17.00 WIB</p>
-            <p class="font-redressed">Sabtu - Minggu : Tutup </p>
-            
+            <p class="font-redressed">Sabtu - Minggu : Tutup</p>
           </div> 
         </div>
         <div class="text-center mt-12">
@@ -447,3 +324,76 @@ onUnmounted(() => {
     </footer>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const showMobileMenu = ref(false);
+const countdown = ref('5 Hari 00:00:00');
+const intervalId = ref(null);
+const currentTime = ref('');
+const currentDate = ref('');
+
+// Scroll ke section
+function scrollToSection(refName) {
+  const el = document.getElementById(refName);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Countdown logic (3-5 days)
+function startCountdown() {
+  const endDate = new Date();
+  endDate.setDate(endDate.getDate() + 5); // 5 days from now
+  
+  intervalId.value = setInterval(() => {
+    const now = new Date();
+    const diff = endDate - now;
+    
+    if (diff <= 0) {
+      countdown.value = '00:00:00';
+      clearInterval(intervalId.value);
+      return;
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    countdown.value = `${days} Hari ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }, 1000);
+}
+
+// Real time clock
+function updateClock() {
+  const now = new Date();
+  const options = { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  };
+  currentTime.value = now.toLocaleTimeString();
+  currentDate.value = now.toLocaleDateString('id-ID', options);
+}
+
+onMounted(() => {
+  startCountdown();
+  updateClock();
+  setInterval(updateClock, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(intervalId.value);
+});
+</script>
+
+<style>
+/* Import Font Awesome */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+/* Custom font class */
+.font-redressed {
+  font-family: 'Redressed', cursive;
+}
+</style>
