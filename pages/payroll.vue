@@ -198,7 +198,7 @@
                     {{ formatCurrency(payroll.positionAllowance + payroll.transportAllowance + payroll.mealAllowance) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ formatCurrency(payroll.taxDeduction) }}
+                    {{ formatCurrency(payroll.bpjsDeduction + payroll.taxDeduction + payroll.otherDeductions) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {{ formatCurrency(payroll.total) }}
@@ -211,6 +211,11 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button @click="viewPayroll(payroll.id)" class="text-blue-600 hover:text-blue-900 mr-3">Detail</button>
                     <button @click="editPayroll(payroll.id)" class="text-yellow-600 hover:text-yellow-900">Edit</button>
+                  </td>
+                </tr>
+                <tr v-if="filteredPayroll.length === 0">
+                  <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">
+                    Tidak ada data penggajian yang ditemukan
                   </td>
                 </tr>
               </tbody>
@@ -245,6 +250,7 @@
                 </div>
 
                 <div class="border-t border-b py-4 my-4">
+                  <h4 class="font-medium mb-3">Pendapatan</h4>
                   <div class="flex justify-between mb-2">
                     <span>Gaji Pokok:</span>
                     <span>{{ formatCurrency(selectedPayroll.basicSalary) }}</span>
@@ -272,6 +278,7 @@
                 </div>
 
                 <div class="border-b py-4 my-4">
+                  <h4 class="font-medium mb-3">Potongan</h4>
                   <div class="flex justify-between mb-2">
                     <span>Potongan BPJS:</span>
                     <span class="text-red-600">-{{ formatCurrency(selectedPayroll.bpjsDeduction) }}</span>
@@ -453,6 +460,146 @@ export default defineComponent({
         total: 8850000,
         status: 'processed',
         photo: 'https://randomuser.me/api/portraits/men/2.jpg'
+      },
+      {
+        id: 4,
+        nik: 'EMP004',
+        name: 'Dewi Lestari',
+        department: 'Marketing',
+        position: 'Marketing Specialist',
+        period: 'Mei 2023',
+        basicSalary: 9000000,
+        positionAllowance: 1200000,
+        transportAllowance: 500000,
+        mealAllowance: 600000,
+        overtime: 500000,
+        bonus: 500000,
+        bpjsDeduction: 350000,
+        taxDeduction: 800000,
+        otherDeductions: 0,
+        total: 12150000,
+        status: 'paid',
+        photo: 'https://randomuser.me/api/portraits/women/2.jpg'
+      },
+      {
+        id: 5,
+        nik: 'EMP005',
+        name: 'Eko Prasetyo',
+        department: 'Operations',
+        position: 'Operation Manager',
+        period: 'Mei 2023',
+        basicSalary: 15000000,
+        positionAllowance: 2000000,
+        transportAllowance: 1000000,
+        mealAllowance: 800000,
+        overtime: 0,
+        bonus: 1500000,
+        bpjsDeduction: 600000,
+        taxDeduction: 2000000,
+        otherDeductions: 0,
+        total: 17700000,
+        status: 'paid',
+        photo: 'https://randomuser.me/api/portraits/men/3.jpg'
+      },
+      {
+        id: 6,
+        nik: 'EMP006',
+        name: 'Fitri Handayani',
+        department: 'Customer Service',
+        position: 'CS Supervisor',
+        period: 'Mei 2023',
+        basicSalary: 6500000,
+        positionAllowance: 800000,
+        transportAllowance: 500000,
+        mealAllowance: 600000,
+        overtime: 350000,
+        bonus: 0,
+        bpjsDeduction: 300000,
+        taxDeduction: 300000,
+        otherDeductions: 100000,
+        total: 8050000,
+        status: 'paid',
+        photo: 'https://randomuser.me/api/portraits/women/3.jpg'
+      },
+      {
+        id: 7,
+        nik: 'EMP007',
+        name: 'Gunawan Setiawan',
+        department: 'IT',
+        position: 'Backend Developer',
+        period: 'Mei 2023',
+        basicSalary: 8500000,
+        positionAllowance: 1000000,
+        transportAllowance: 500000,
+        mealAllowance: 600000,
+        overtime: 1000000,
+        bonus: 0,
+        bpjsDeduction: 350000,
+        taxDeduction: 600000,
+        otherDeductions: 0,
+        total: 10650000,
+        status: 'paid',
+        photo: 'https://randomuser.me/api/portraits/men/4.jpg'
+      },
+      {
+        id: 8,
+        nik: 'EMP008',
+        name: 'Hana Susanti',
+        department: 'Finance',
+        position: 'Accountant',
+        period: 'Mei 2023',
+        basicSalary: 9500000,
+        positionAllowance: 1200000,
+        transportAllowance: 500000,
+        mealAllowance: 600000,
+        overtime: 0,
+        bonus: 750000,
+        bpjsDeduction: 400000,
+        taxDeduction: 900000,
+        otherDeductions: 0,
+        total: 11250000,
+        status: 'paid',
+        photo: 'https://randomuser.me/api/portraits/women/4.jpg'
+      },
+      {
+        id: 9,
+        nik: 'EMP009',
+        name: 'Irfan Maulana',
+        department: 'IT',
+        position: 'System Administrator',
+        period: 'Mei 2023',
+        basicSalary: 7500000,
+        positionAllowance: 900000,
+        transportAllowance: 500000,
+        mealAllowance: 600000,
+        overtime: 600000,
+        bonus: 0,
+        bpjsDeduction: 300000,
+        taxDeduction: 450000,
+        otherDeductions: 0,
+        total: 9350000,
+        status: 'draft',
+        photo: 'https://randomuser.me/api/portraits/men/5.jpg'
+      },
+      {
+        id: 10,
+        nik: 'EMP010',
+        name: 'Jihan Putri',
+        department: 'Marketing',
+        position: 'Digital Marketing',
+        period: 'Mei 2023',
+        basicSalary: 7000000,
+        positionAllowance: 800000,
+        transportAllowance: 500000,
+        mealAllowance: 600000,
+        overtime: 300000,
+        bonus: 500000,
+        bpjsDeduction: 300000,
+        taxDeduction: 400000,
+        otherDeductions: 0,
+        total: 9000000,
+        status: 'processed',
+        photo: 'https://randomuser.me/api/portraits/women/5.jpg'
       }
     ])
 
@@ -479,14 +626,16 @@ export default defineComponent({
         const query = searchQuery.value.toLowerCase()
         result = result.filter(p => 
           p.name.toLowerCase().includes(query) || 
-          p.nik.toLowerCase().includes(query))
+          p.nik.toLowerCase().includes(query) ||
+          p.position.toLowerCase().includes(query) ||
+          p.department.toLowerCase().includes(query))
       }
       
       return result
     })
 
     const formatCurrency = (amount: number) => {
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount)
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount)
     }
 
     const payrollStatus = (status: string) => {
@@ -524,7 +673,10 @@ export default defineComponent({
     }
 
     const editPayroll = (id: number) => {
-      console.log('Edit payroll:', id)
+      const payroll = payrolls.value.find(p => p.id === id)
+      if (payroll) {
+        alert(`Mengedit data penggajian untuk ${payroll.name}`)
+      }
     }
 
     const processPayroll = (id: number) => {
@@ -539,8 +691,10 @@ export default defineComponent({
     }
 
     const printPayroll = (id: number) => {
-      console.log('Printing payroll slip for:', id)
-      alert('Slip gaji telah dicetak')
+      const payroll = payrolls.value.find(p => p.id === id)
+      if (payroll) {
+        alert(`Mencetak slip gaji untuk ${payroll.name}`)
+      }
     }
 
     return {
@@ -569,3 +723,7 @@ export default defineComponent({
   }
 })
 </script>
+
+<style>
+/* Tambahkan style khusus jika diperlukan */
+</style>

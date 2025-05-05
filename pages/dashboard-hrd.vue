@@ -77,14 +77,14 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import Sidebar from '../components/Sidebar.vue'
-import Header from '../components/Header.vue'
-import StatsCard from '../components/StatsCard.vue'
-import RecentApplicants from '../components/RecentApplicants.vue'
-import HRCalendar from '../components/HRCalendar.vue'
-import QuickActions from '../components/QuickActions.vue'
-import BirthdayList from '../components/BirthdayList.vue'
-import InterviewModal from '../components/InterviewModal.vue'
+import Sidebar from '@/components/Sidebar.vue'
+import Header from '@/components/Header.vue'
+import StatsCard from '@/components/StatsCard.vue'
+import RecentApplicants from '@/components/RecentApplicants.vue'
+import HRCalendar from '@/components/HRCalendar.vue'
+import QuickActions from '@/components/QuickActions.vue'
+import BirthdayList from '@/components/BirthdayList.vue'
+import InterviewModal from '@/components/InterviewModal.vue'
 
 export default defineComponent({
   name: 'DashboardPage',

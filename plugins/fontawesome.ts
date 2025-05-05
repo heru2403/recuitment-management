@@ -14,7 +14,21 @@ import {
   faExclamationCircle,
   faEnvelope,
   faFileExport,
-  faTimes
+  faTimes,
+  faUserTag, 
+  faCog, 
+  faBell, 
+  faChevronDown, 
+  faUserCircle,
+  faSyncAlt,
+  faCircleCheck,
+  faUserCheck,
+  faClock,
+  faArrowRight,
+  faCaretUp,
+  faCaretDown,
+  faDatabase,
+  faShieldAlt
 } from '@fortawesome/free-solid-svg-icons'
 
 config.autoAddCss = false
@@ -32,7 +46,27 @@ library.add(
   faExclamationCircle,
   faEnvelope,
   faFileExport,
-  faTimes
+  faTimes,
+  faShieldAlt, 
+  faTachometerAlt, 
+  faUsers, 
+  faUserTag, 
+  faCog, 
+  faSignOutAlt, 
+  faBell, 
+  faChevronDown, 
+  faUserCircle,
+  faSyncAlt,
+  faCircleCheck,
+  faUserCheck,
+  faClock,
+  faArrowRight,
+  faCaretUp,
+  faCaretDown,
+  faUserPlus,
+  faFileExport,
+  faDatabase
+
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

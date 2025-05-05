@@ -247,7 +247,7 @@
         // Simulate redirect based on role
         switch (selectedRole.value) {
           case 'admin':
-            navigateTo('/admin-dashboard')
+            navigateTo('/admin/dashboard')
             break
           case 'hrd':
             navigateTo('/dashboard-hrd')
