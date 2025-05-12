@@ -30,7 +30,7 @@
         router.push('/admin/dashboard')
         break
       case 'hrd':
-        router.push('/hrd/dashboard')
+        router.push('/dashboard')
         break
       default:
         if (position.value) {

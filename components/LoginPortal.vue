@@ -256,7 +256,7 @@
             if (form.email.includes('new') || form.registrationCode) {
               navigateTo('/new-employee-welcome')
             } else {
-              navigateTo('/employee-dashboard')
+              navigateTo('/employee/employee-dashboard')
             }
             break
           default:

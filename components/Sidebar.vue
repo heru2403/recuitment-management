@@ -1,7 +1,7 @@
 <template>
   <aside
     :class="[
-      'fixed h-full bg-blue-800 text-white z-50 transition-all duration-300 overflow-hidden',
+      'fixed h-full bg-blue-800 text-white z-50 transition-all duration-300 overflow-hidden flex flex-col',
       collapsed ? 'w-16' : 'w-64'
     ]"
   >
@@ -40,13 +40,13 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="p-2">
+    <nav class="p-2 flex-1 overflow-y-auto">
       <ul class="space-y-2">
         <li v-for="item in menuItems" :key="item.text">
           <NuxtLink
             :to="item.to"
             class="flex items-center p-3 rounded hover:bg-blue-700 transition-colors"
-            :class="{ 'bg-blue-700': $route.path === item.to }"
+            :class="{ 'bg-blue-700': isActive(item.to) }"
           >
             <FontAwesomeIcon :icon="item.icon" class="w-5" />
             <span v-if="!collapsed" class="ml-3">{{ item.text }}</span>
@@ -54,11 +54,23 @@
         </li>
       </ul>
     </nav>
+
+    <!-- Logout Button - Dipindahkan ke luar <nav> dan <ul> -->
+    <div class="p-4 border-t border-blue-700 mt-auto">
+      <button
+        @click="logout"
+        class="w-full flex items-center justify-center p-3 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <FontAwesomeIcon icon="sign-out-alt" class="w-5" />
+        <span v-if="!collapsed" class="ml-3">Logout</span>
+      </button>
+    </div>
   </aside>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import type { MenuItem } from '~/types/dashboard'
 
 export default defineComponent({
@@ -71,6 +83,9 @@ export default defineComponent({
   },
   emits: ['toggle'],
   setup(props, { emit }) {
+    const router = useRouter()
+    const route = useRoute()
+    
     const menuItems: MenuItem[] = [
       { text: 'Dashboard', to: '/dashboard-hrd', icon: 'tachometer-alt' },
       { text: 'Rekrutmen', to: '/recruitment', icon: 'user-plus' },
@@ -78,17 +93,36 @@ export default defineComponent({
       { text: 'Absensi', to: '/attendance', icon: 'calendar-alt' },
       { text: 'Penggajian', to: '/payroll', icon: 'file-invoice-dollar' },
       { text: 'Laporan', to: '/reports', icon: 'chart-bar' },
-      { text: 'Logout', to: '/Logout', icon: 'sign-out-alt' },
     ]
+
+    const isActive = (path: string) => {
+      return route.path === path
+    }
 
     const toggleSidebar = () => {
       emit('toggle')
     }
 
+    const logout = async () => {
+      try {
+        // Lakukan proses logout di sini
+        // Contoh: hapus token, dll.
+        localStorage.removeItem('token')
+        
+        // Redirect ke halaman login
+        await router.push('/login')
+      } catch (error) {
+        console.error('Logout error:', error)
+      }
+    }
+
     return {
       menuItems,
-      toggleSidebar
+      toggleSidebar,
+      logout,
+      isActive
     }
-  },
+  }
 })
 </script>
+

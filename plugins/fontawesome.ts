@@ -2,15 +2,18 @@ import { library, config } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { 
   faTachometerAlt, 
+  faUser,
   faUserPlus, 
   faUsers, 
   faCalendarAlt, 
+  faCalendarCheck,
+  faPlane,
   faFileInvoiceDollar, 
+  faTasks,
   faChartBar, 
   faSignOutAlt, 
   faBars,
   faUserFriends,
-  faCalendarCheck,
   faExclamationCircle,
   faEnvelope,
   faFileExport,
@@ -31,42 +34,57 @@ import {
   faShieldAlt
 } from '@fortawesome/free-solid-svg-icons'
 
+// Konfigurasi untuk mencegah penambahan CSS otomatis
 config.autoAddCss = false
+
+// Tambahkan semua ikon ke library
 library.add(
-  faTachometerAlt, 
-  faUserPlus, 
-  faUsers, 
-  faCalendarAlt, 
-  faFileInvoiceDollar, 
-  faChartBar, 
-  faSignOutAlt, 
-  faBars,
+  // Ikon dasar
+  faTachometerAlt,
+  faUser,
+  faUserPlus,
+  faUsers,
   faUserFriends,
-  faCalendarCheck,
-  faExclamationCircle,
-  faEnvelope,
-  faFileExport,
-  faTimes,
-  faShieldAlt, 
-  faTachometerAlt, 
-  faUsers, 
-  faUserTag, 
-  faCog, 
-  faSignOutAlt, 
-  faBell, 
-  faChevronDown, 
+  faUserTag,
   faUserCircle,
-  faSyncAlt,
-  faCircleCheck,
   faUserCheck,
+  
+  // Ikon kalender dan waktu
+  faCalendarAlt,
+  faCalendarCheck,
   faClock,
+  
+  // Ikon dokumen
+  faFileInvoiceDollar,
+  faFileExport,
+  
+  // Ikon navigasi
+  faBars,
+  faSignOutAlt,
+  faChevronDown,
   faArrowRight,
   faCaretUp,
   faCaretDown,
-  faUserPlus,
-  faFileExport,
-  faDatabase
-
+  
+  // Ikon aksi
+  faTasks,
+  faChartBar,
+  faSyncAlt,
+  faCircleCheck,
+  faTimes,
+  
+  // Ikon notifikasi
+  faExclamationCircle,
+  faEnvelope,
+  faBell,
+  
+  // Ikon sistem
+  faCog,
+  faDatabase,
+  faShieldAlt,
+  
+  // Ikon khusus
+  faPlane
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

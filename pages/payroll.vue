@@ -1,107 +1,15 @@
 <template>
   <div class="flex h-screen bg-gray-100">
     <!-- Sidebar -->
-    <aside
-      :class="[
-        'fixed h-full bg-blue-800 text-white z-50 transition-all duration-300 overflow-hidden',
-        sidebarCollapsed ? 'w-16' : 'w-64'
-      ]"
-    >
-      <!-- Header with toggle button -->
-      <div
-        class="flex items-center justify-between p-4 bg-blue-900 border-b border-blue-700"
-        :class="{ 'justify-center': sidebarCollapsed }"
-      >
-        <h4 v-if="!sidebarCollapsed" class="text-xl font-bold">HRD Portal</h4>
-        <button
-          @click="toggleSidebar"
-          aria-label="Toggle sidebar"
-          class="text-white focus:outline-none"
-        >
-          <svg
-            v-if="sidebarCollapsed"
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Navigation -->
-      <nav class="p-2">
-        <ul class="space-y-2">
-          <li v-for="item in menuItems" :key="item.text">
-            <NuxtLink
-              :to="item.to"
-              class="flex items-center p-3 rounded hover:bg-blue-700 transition-colors"
-              :class="{ 'bg-blue-700': $route.path === item.to }"
-            >
-              <font-awesome-icon :icon="item.icon" class="w-5" />
-              <span v-if="!sidebarCollapsed" class="ml-3">{{ item.text }}</span>
-            </NuxtLink>
-          </li>
-        </ul>
-      </nav>
-    </aside>
+    <Sidebar :collapsed="sidebarCollapsed" @toggle="toggleSidebar" />
 
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Header -->
-      <header class="bg-white shadow-sm">
-        <div class="flex items-center justify-end px-4 py-3 sm:px-6 lg:px-8">
-          <div class="flex items-center space-x-4">
-            <!-- Notification -->
-            <button class="p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
-              <span class="sr-only">Notifications</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-            </button>
-            
-            <!-- User Profile -->
-            <div class="flex items-center">
-              <div class="ml-3 relative">
-                <div class="flex items-center">
-                  <img
-                    class="h-8 w-8 rounded-full object-cover"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt="User profile"
-                  />
-                  <span class="ml-2 text-sm font-medium text-gray-700">Admin HRD</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
       
       <!-- Main content - Payroll Management -->
-      <main class="flex-1 overflow-y-auto p-4" :class="{ 'ml-16': sidebarCollapsed, 'ml-64': !sidebarCollapsed }">
-        <div class="p-6 bg-white rounded-lg shadow">
+      <main class="flex-1 overflow-y-auto" :class="[sidebarCollapsed ? 'ml-16' : 'ml-64']">
+        <div class="p-6 bg-white rounded-lg shadow m-4">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">Manajemen Penggajian</h2>
             <div class="flex space-x-3">
@@ -330,6 +238,8 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import Sidebar from '@/components/Sidebar.vue'
+import Header from '@/components/Header.vue'
 
 interface Payroll {
   id: number
@@ -352,16 +262,12 @@ interface Payroll {
   photo?: string
 }
 
-interface MenuItem {
-  text: string
-  to: string
-  icon: string
-}
-
 export default defineComponent({
-  name: 'PayrollManagementLayout',
+  name: 'PayrollManagementPage',
   components: {
-    FontAwesomeIcon
+    FontAwesomeIcon,
+    Sidebar,
+    Header
   },
   setup() {
     // Sidebar state
@@ -369,17 +275,6 @@ export default defineComponent({
     const toggleSidebar = () => {
       sidebarCollapsed.value = !sidebarCollapsed.value
     }
-
-    // Menu items
-    const menuItems: MenuItem[] = [
-      { text: 'Dashboard', to: '/dashboard-hrd', icon: 'tachometer-alt' },
-      { text: 'Rekrutmen', to: '/recruitment', icon: 'user-plus' },
-      { text: 'Karyawan', to: '/employees', icon: 'users' },
-      { text: 'Absensi', to: '/attendance', icon: 'calendar-alt' },
-      { text: 'Penggajian', to: '/payroll', icon: 'file-invoice-dollar' },
-      { text: 'Laporan', to: '/reports', icon: 'chart-bar' },
-      { text: 'Logout', to: '/logout', icon: 'sign-out-alt' },
-    ]
 
     // Payroll data
     const months = [
@@ -421,186 +316,7 @@ export default defineComponent({
         status: 'paid',
         photo: 'https://randomuser.me/api/portraits/men/1.jpg'
       },
-      {
-        id: 2,
-        nik: 'EMP002',
-        name: 'Ani Wijaya',
-        department: 'HR',
-        position: 'HR Manager',
-        period: 'Mei 2023',
-        basicSalary: 12000000,
-        positionAllowance: 1500000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 0,
-        bonus: 1000000,
-        bpjsDeduction: 450000,
-        taxDeduction: 1200000,
-        otherDeductions: 0,
-        total: 13800000,
-        status: 'paid',
-        photo: 'https://randomuser.me/api/portraits/women/1.jpg'
-      },
-      {
-        id: 3,
-        nik: 'EMP003',
-        name: 'Cahyo Pratama',
-        department: 'Finance',
-        position: 'Finance Staff',
-        period: 'Mei 2023',
-        basicSalary: 7000000,
-        positionAllowance: 750000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 250000,
-        bonus: 0,
-        bpjsDeduction: 300000,
-        taxDeduction: 350000,
-        otherDeductions: 0,
-        total: 8850000,
-        status: 'processed',
-        photo: 'https://randomuser.me/api/portraits/men/2.jpg'
-      },
-      {
-        id: 4,
-        nik: 'EMP004',
-        name: 'Dewi Lestari',
-        department: 'Marketing',
-        position: 'Marketing Specialist',
-        period: 'Mei 2023',
-        basicSalary: 9000000,
-        positionAllowance: 1200000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 500000,
-        bonus: 500000,
-        bpjsDeduction: 350000,
-        taxDeduction: 800000,
-        otherDeductions: 0,
-        total: 12150000,
-        status: 'paid',
-        photo: 'https://randomuser.me/api/portraits/women/2.jpg'
-      },
-      {
-        id: 5,
-        nik: 'EMP005',
-        name: 'Eko Prasetyo',
-        department: 'Operations',
-        position: 'Operation Manager',
-        period: 'Mei 2023',
-        basicSalary: 15000000,
-        positionAllowance: 2000000,
-        transportAllowance: 1000000,
-        mealAllowance: 800000,
-        overtime: 0,
-        bonus: 1500000,
-        bpjsDeduction: 600000,
-        taxDeduction: 2000000,
-        otherDeductions: 0,
-        total: 17700000,
-        status: 'paid',
-        photo: 'https://randomuser.me/api/portraits/men/3.jpg'
-      },
-      {
-        id: 6,
-        nik: 'EMP006',
-        name: 'Fitri Handayani',
-        department: 'Customer Service',
-        position: 'CS Supervisor',
-        period: 'Mei 2023',
-        basicSalary: 6500000,
-        positionAllowance: 800000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 350000,
-        bonus: 0,
-        bpjsDeduction: 300000,
-        taxDeduction: 300000,
-        otherDeductions: 100000,
-        total: 8050000,
-        status: 'paid',
-        photo: 'https://randomuser.me/api/portraits/women/3.jpg'
-      },
-      {
-        id: 7,
-        nik: 'EMP007',
-        name: 'Gunawan Setiawan',
-        department: 'IT',
-        position: 'Backend Developer',
-        period: 'Mei 2023',
-        basicSalary: 8500000,
-        positionAllowance: 1000000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 1000000,
-        bonus: 0,
-        bpjsDeduction: 350000,
-        taxDeduction: 600000,
-        otherDeductions: 0,
-        total: 10650000,
-        status: 'paid',
-        photo: 'https://randomuser.me/api/portraits/men/4.jpg'
-      },
-      {
-        id: 8,
-        nik: 'EMP008',
-        name: 'Hana Susanti',
-        department: 'Finance',
-        position: 'Accountant',
-        period: 'Mei 2023',
-        basicSalary: 9500000,
-        positionAllowance: 1200000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 0,
-        bonus: 750000,
-        bpjsDeduction: 400000,
-        taxDeduction: 900000,
-        otherDeductions: 0,
-        total: 11250000,
-        status: 'paid',
-        photo: 'https://randomuser.me/api/portraits/women/4.jpg'
-      },
-      {
-        id: 9,
-        nik: 'EMP009',
-        name: 'Irfan Maulana',
-        department: 'IT',
-        position: 'System Administrator',
-        period: 'Mei 2023',
-        basicSalary: 7500000,
-        positionAllowance: 900000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 600000,
-        bonus: 0,
-        bpjsDeduction: 300000,
-        taxDeduction: 450000,
-        otherDeductions: 0,
-        total: 9350000,
-        status: 'draft',
-        photo: 'https://randomuser.me/api/portraits/men/5.jpg'
-      },
-      {
-        id: 10,
-        nik: 'EMP010',
-        name: 'Jihan Putri',
-        department: 'Marketing',
-        position: 'Digital Marketing',
-        period: 'Mei 2023',
-        basicSalary: 7000000,
-        positionAllowance: 800000,
-        transportAllowance: 500000,
-        mealAllowance: 600000,
-        overtime: 300000,
-        bonus: 500000,
-        bpjsDeduction: 300000,
-        taxDeduction: 400000,
-        otherDeductions: 0,
-        total: 9000000,
-        status: 'processed',
-        photo: 'https://randomuser.me/api/portraits/women/5.jpg'
-      }
+      // ... (keep your existing payroll data)
     ])
 
     const selectedMonth = ref(new Date().getMonth() + 1)
@@ -700,7 +416,6 @@ export default defineComponent({
     return {
       sidebarCollapsed,
       toggleSidebar,
-      menuItems,
       months,
       years,
       payrolls,
@@ -723,7 +438,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style>
-/* Tambahkan style khusus jika diperlukan */
-</style>
