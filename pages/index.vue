@@ -110,7 +110,7 @@
                 <span class="ml-2 text-lg font-redressed">Full-time</span>
               </div>
             </div>
-            <NuxtLink to="/login?position=frontend" class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md text-center block">
+            <NuxtLink to="/candidate/login?position=frontend" class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md text-center block">
               Lamar Sekarang
             </NuxtLink>
           </div>
@@ -134,7 +134,7 @@
                 <span class="ml-2 text-lg font-redressed">Full-time</span>
               </div>
             </div>
-            <NuxtLink to="/login?position=backend" class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md text-center block">
+            <NuxtLink to="/candidate/login?position=backend" class="bg-[#174e65] text-white text-xl w-full py-3 rounded-lg mt-6 font-redressed hover:bg-[#0d3648] transition-colors shadow-md text-center block">
               Lamar Sekarang
             </NuxtLink>
           </div>

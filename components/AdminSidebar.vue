@@ -186,7 +186,29 @@
           </li>
         </ul>
       </div>
+
+      <!-- Tambahkan di bagian navigasi -->
+<div class="px-4 mb-6">
+  <h3 class="text-xs uppercase font-semibold text-gray-400 mb-3 tracking-wider">CBT</h3>
+  <ul class="space-y-2">
+    <li>
+      <NuxtLink 
+        to="/admin/cbt" 
+        class="flex items-center px-3 py-2.5 text-sm rounded-lg transition-all"
+        :class="isActive('/admin/cbt') ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700 hover:text-white'"
+      >
+        <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V7a2 2 0 012-2zm0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
+        </svg>
+        CBT
+      </NuxtLink>
+    </li>
+  </ul>
+</div>
+
     </nav>
+
+
 
     <!-- Bottom Section -->
     <div class="p-4 border-t border-gray-700 mt-auto">
