@@ -127,18 +127,6 @@
               Media Library
             </NuxtLink>
           </li>
-          <li>
-            <NuxtLink 
-              to="/admin/menus" 
-              class="flex items-center px-3 py-2.5 text-sm rounded-lg transition-all"
-              :class="isActive('/admin/menus') ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700 hover:text-white'"
-            >
-              <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-              Manajemen Menu
-            </NuxtLink>
-          </li>
         </ul>
       </div>
 

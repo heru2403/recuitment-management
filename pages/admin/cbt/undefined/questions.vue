@@ -65,6 +65,57 @@
       </div>
     </div>
 
+    <!-- Filters -->
+    <div class="bg-white shadow rounded-lg p-4 mb-6">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <label for="search" class="sr-only">Search candidates</label>
+          <input
+            id="search"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search candidates..."
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+        <div class="w-full md:w-48">
+          <label for="status" class="sr-only">Filter by status</label>
+          <select
+            id="status"
+            v-model="statusFilter"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="all">All Results</option>
+            <option value="passed">Passed Only</option>
+            <option value="failed">Failed Only</option>
+          </select>
+        </div>
+        <div class="w-full md:w-48">
+          <label for="sort" class="sr-only">Sort by</label>
+          <select
+            id="sort"
+            v-model="sortBy"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="score">Score</option>
+            <option value="date">Date</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+        <div class="w-full md:w-48">
+          <label for="direction" class="sr-only">Sort direction</label>
+          <select
+            id="direction"
+            v-model="sortDirection"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <!-- Results Table -->
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
       <div class="overflow-x-auto">
@@ -73,6 +124,9 @@
             <tr>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Candidate
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
               </th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Score
@@ -89,7 +143,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="result in results" :key="result.id">
+            <tr v-for="result in filteredResults" :key="result.id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
@@ -99,9 +153,11 @@
                   </div>
                   <div class="ml-4">
                     <div class="text-sm font-medium text-gray-900">{{ result.candidate.full_name }}</div>
-                    <div class="text-sm text-gray-500">{{ result.candidate.email }}</div>
                   </div>
                 </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ result.candidate.email }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
@@ -127,24 +183,19 @@
                   :to="`/admin/cbt/results/${result.id}`"
                   class="text-blue-600 hover:text-blue-900 mr-4"
                 >
-                  View Details
+                  View
                 </NuxtLink>
                 <button
                   @click="downloadResult(result.id)"
                   class="text-indigo-600 hover:text-indigo-900"
                 >
-                  Download PDF
+                  Download
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
-      <SpinnerIcon class="animate-spin h-12 w-12 text-blue-500" />
     </div>
 
     <!-- Empty State -->
@@ -155,6 +206,54 @@
       <h3 class="mt-2 text-lg font-medium text-gray-900">No results yet</h3>
       <p class="mt-1 text-gray-500">This test hasn't been taken by any candidates yet.</p>
     </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="results.length > 0" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6">
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Showing <span class="font-medium">{{ pagination.from }}</span> to <span class="font-medium">{{ pagination.to }}</span> of <span class="font-medium">{{ pagination.total }}</span> results
+          </p>
+        </div>
+        <div>
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <button
+              @click="prevPage"
+              :disabled="pagination.current_page === 1"
+              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span class="sr-only">Previous</span>
+              <ChevronLeftIcon class="h-5 w-5" />
+            </button>
+            <button
+              v-for="page in pagination.last_page"
+              :key="page"
+              @click="goToPage(page)"
+              :class="{
+                'z-10 bg-blue-50 border-blue-500 text-blue-600': page === pagination.current_page,
+                'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': page !== pagination.current_page
+              }"
+              class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+            >
+              {{ page }}
+            </button>
+            <button
+              @click="nextPage"
+              :disabled="pagination.current_page === pagination.last_page"
+              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span class="sr-only">Next</span>
+              <ChevronRightIcon class="h-5 w-5" />
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -164,9 +263,10 @@ import {
   UsersIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/vue/24/outline'
-import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
 
 interface Candidate {
   id: number
@@ -195,6 +295,14 @@ interface Statistics {
   average_score: number
 }
 
+interface Pagination {
+  current_page: number
+  last_page: number
+  from: number
+  to: number
+  total: number
+}
+
 const route = useRoute()
 const test = ref<Test>({ id: Number(route.params.id), title: '' })
 const results = ref<Result[]>([])
@@ -206,6 +314,54 @@ const statistics = ref<Statistics>({
 })
 const loading = ref(true)
 
+// Filters
+const searchQuery = ref('')
+const statusFilter = ref('all')
+const sortBy = ref<'score' | 'date' | 'name'>('score')
+const sortDirection = ref<'asc' | 'desc'>('desc')
+
+// Pagination
+const pagination = ref<Pagination>({
+  current_page: 1,
+  last_page: 1,
+  from: 1,
+  to: 1,
+  total: 0
+})
+
+const filteredResults = computed(() => {
+  let filtered = results.value
+
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(result =>
+      result.candidate.full_name.toLowerCase().includes(query) ||
+      result.candidate.email.toLowerCase().includes(query)
+    )
+  }
+
+  // Apply status filter
+  if (statusFilter.value !== 'all') {
+    filtered = filtered.filter(result => result.status === statusFilter.value)
+  }
+
+  // Apply sorting
+  filtered = [...filtered].sort((a, b) => {
+    let comparison = 0
+    if (sortBy.value === 'score') {
+      comparison = (a.score / a.total_points) - (b.score / b.total_points)
+    } else if (sortBy.value === 'date') {
+      comparison = new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime()
+    } else if (sortBy.value === 'name') {
+      comparison = a.candidate.full_name.localeCompare(b.candidate.full_name)
+    }
+    return sortDirection.value === 'desc' ? -comparison : comparison
+  })
+
+  return filtered
+})
+
 onMounted(async () => {
   await fetchTestDetails()
   await fetchResults()
@@ -214,9 +370,10 @@ onMounted(async () => {
 
 async function fetchTestDetails() {
   try {
-    const { data } = await useFetch<Test>(`/api/admin/tests/${test.value.id}`)
-    if (data.value) {
-      test.value.title = data.value.title
+    const { data } = await useFetch(`/api/admin/tests/${test.value.id}`)
+    const testData = data.value as { title?: string } | null
+    if (testData && typeof testData.title === 'string') {
+      test.value.title = testData.title
     }
   } catch (error) {
     console.error('Error fetching test details:', error)
@@ -227,8 +384,32 @@ async function fetchTestDetails() {
 async function fetchResults() {
   try {
     loading.value = true
-    const { data } = await useFetch(`/api/admin/tests/${test.value.id}/results`)
-    results.value = Array.isArray(data.value) ? data.value : []
+    const { data } = await useFetch(`/api/admin/tests/${test.value.id}/results`, {
+      params: {
+        page: pagination.value.current_page
+      }
+    })
+
+    // Type assertion to inform TypeScript about the expected structure
+    const response = data.value as {
+      data: Result[],
+      current_page: number,
+      last_page: number,
+      from: number,
+      to: number,
+      total: number
+    } | null
+
+    if (response) {
+      results.value = response.data
+      pagination.value = {
+        current_page: response.current_page,
+        last_page: response.last_page,
+        from: response.from,
+        to: response.to,
+        total: response.total
+      }
+    }
   } catch (error) {
     console.error('Error fetching results:', error)
     useToast().error('Failed to load results')
@@ -239,15 +420,15 @@ async function fetchResults() {
 
 async function fetchStatistics() {
   try {
-    const { data } = await useFetch<{ total_attempts?: number; passed?: number; failed?: number; average_score?: number }>(
-      `/api/admin/tests/${test.value.id}/results/statistics`
-    )
-    const stats = data.value || {};
-    statistics.value = {
-      total_attempts: stats.total_attempts ?? 0,
-      passed: stats.passed ?? 0,
-      failed: stats.failed ?? 0,
-      average_score: stats.average_score ?? 0
+    const { data } = await useFetch(`/api/admin/tests/${test.value.id}/results/statistics`)
+    const stats = data.value as Partial<Statistics> | null
+    if (stats && typeof stats === 'object') {
+      statistics.value = {
+        total_attempts: typeof stats.total_attempts === 'number' ? stats.total_attempts : 0,
+        passed: typeof stats.passed === 'number' ? stats.passed : 0,
+        failed: typeof stats.failed === 'number' ? stats.failed : 0,
+        average_score: typeof stats.average_score === 'number' ? stats.average_score : 0
+      }
     }
   } catch (error) {
     console.error('Error fetching statistics:', error)
@@ -275,7 +456,7 @@ async function downloadResult(resultId: number) {
       // Ensure data.value is a Blob
       const blob = data.value instanceof Blob
         ? data.value
-        : new Blob([data.value as ArrayBuffer], { type: 'application/pdf' })
+        : new Blob([typeof data.value === 'string' ? data.value : JSON.stringify(data.value)])
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -290,6 +471,26 @@ async function downloadResult(resultId: number) {
     useToast().error('Failed to download result')
   }
 }
+
+function prevPage() {
+  if (pagination.value.current_page > 1) {
+    pagination.value.current_page--
+    fetchResults()
+  }
+}
+
+function nextPage() {
+  if (pagination.value.current_page < pagination.value.last_page) {
+    pagination.value.current_page++
+    fetchResults()
+  }
+}
+
+function goToPage(page: number) {
+  pagination.value.current_page = page
+  fetchResults()
+}
+
 
 function useToast() {
   return {

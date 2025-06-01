@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">Role Management</h1>
       <button 
-        @click="showAddRoleModal = true"
+        @click="openAddRoleModal"
         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center"
       >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,6 +80,7 @@
                   @click="confirmDeleteRole(role)" 
                   class="text-red-600 hover:text-red-900"
                   :disabled="role.protected"
+                  :class="{'opacity-50 cursor-not-allowed': role.protected}"
                 >
                   Delete
                 </button>
@@ -91,19 +92,22 @@
     </div>
 
     <!-- Add Role Modal -->
-    <Modal :isOpen="showAddRoleModal" title="Add New Role" @close="showAddRoleModal = false">
+    <Modal :isOpen="showAddRoleModal" title="Add New Role" @close="resetModals">
       <RoleForm 
         :permissions="availablePermissions"
         @submit="handleAddRole"
+        @cancel="resetModals"
       />
     </Modal>
 
     <!-- Edit Role Modal -->
-    <Modal :isOpen="showEditRoleModal" title="Edit Role" @close="showEditRoleModal = false">
+    <Modal :isOpen="showEditRoleModal" title="Edit Role" @close="resetModals">
       <RoleForm 
+        v-if="selectedRole"
         :role="selectedRole"
         :permissions="availablePermissions"
         @submit="handleUpdateRole"
+        @cancel="resetModals"
       />
     </Modal>
 
@@ -120,8 +124,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import Modal from '@/components/ui/Modal.vue'
-import ConfirmationDialog from '@/components/ui/ConfirmationDialog.vue'
+import Modal from '~/components/ui/Modal.vue'
+import RoleForm from '~/components/admin/UserForm.vue'
+import ConfirmationDialog from '~/components/ui/ConfirmationDialog.vue'
 
 interface Role {
   id: string;
@@ -132,7 +137,6 @@ interface Role {
   protected: boolean;
 }
 
-// Sample data - replace with actual API calls
 const roles = ref<Role[]>([
   {
     id: 'admin',
@@ -150,7 +154,14 @@ const roles = ref<Role[]>([
     permissions: ['content.create', 'content.edit', 'media.upload'],
     protected: false
   },
-  // Add more roles...
+  {
+    id: 'viewer',
+    name: 'Viewer',
+    description: 'Can view content but not modify',
+    userCount: 8,
+    permissions: ['content.view'],
+    protected: false
+  }
 ])
 
 const availablePermissions = ref([
@@ -162,66 +173,80 @@ const availablePermissions = ref([
   'content.create',
   'content.edit',
   'content.delete',
+  'content.view',
   'media.upload',
   'media.manage'
 ])
 
-// Modals
+// Modals state
 const showAddRoleModal = ref(false)
 const showEditRoleModal = ref(false)
 const showDeleteDialog = ref(false)
 const selectedRole = ref<Role | null>(null)
 
-// Methods
+// Helper function to reset all modals
+const resetModals = () => {
+  showAddRoleModal.value = false
+  showEditRoleModal.value = false
+  selectedRole.value = null
+}
+
+const openAddRoleModal = () => {
+  resetModals()
+  showAddRoleModal.value = true
+}
+
 const editRole = (role: Role) => {
-  selectedRole.value = {
-    id: role.id,
-    name: role.name,
-    description: role.description,
-    userCount: role.userCount,
-    permissions: [...role.permissions],
-    protected: role.protected
-  }
+  resetModals()
+  selectedRole.value = { ...role }
   showEditRoleModal.value = true
 }
 
 const confirmDeleteRole = (role: Role) => {
+  if (role.protected) return
   selectedRole.value = role
   showDeleteDialog.value = true
 }
 
 const handleAddRole = (roleData: Omit<Role, 'userCount' | 'protected'>) => {
-  // In a real app, you would call an API here
+  // Generate a unique ID for the new role
+  const newId = roleData.name.toLowerCase().replace(/\s+/g, '-')
+  
   const newRole: Role = {
     ...roleData,
+    id: newId,
     userCount: 0,
     protected: false
   }
+  
   roles.value.push(newRole)
-  showAddRoleModal.value = false
+  resetModals()
 }
 
-const handleUpdateRole = (roleData: Omit<Role, 'userCount' | 'protected'>) => {
+const handleUpdateRole = (updatedRole: Omit<Role, 'userCount' | 'protected'>) => {
   if (!selectedRole.value) return
   
   const index = roles.value.findIndex(r => r.id === selectedRole.value!.id)
   if (index !== -1) {
     roles.value[index] = { 
       ...roles.value[index], 
-      ...roleData 
+      ...updatedRole,
+      // Preserve these values from the original role
+      userCount: roles.value[index].userCount,
+      protected: roles.value[index].protected
     }
   }
-  showEditRoleModal.value = false
+  
+  resetModals()
 }
 
 const handleDeleteRole = () => {
-  if (!selectedRole.value) return
+  if (!selectedRole.value || selectedRole.value.protected) return
   
   roles.value = roles.value.filter(r => r.id !== selectedRole.value!.id)
   showDeleteDialog.value = false
+  selectedRole.value = null
 }
-
-// Methods (keep your existing methods)
 
 definePageMeta({
   layout: 'admin',

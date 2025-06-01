@@ -3,15 +3,13 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Manajemen Izin Akses</h1>
       
-      <PermissionGuard permission="create_permission">
-        <button
-          @click="showAddModal = true"
-          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
-        >
-          <PlusIcon class="w-5 h-5 mr-1" />
-          Tambah Izin
-        </button>
-      </PermissionGuard>
+      <button
+        @click="openAddModal"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+      >
+        <PlusIcon class="w-5 h-5 mr-1" />
+        Tambah Izin
+      </button>
     </div>
 
     <!-- Filter Section -->
@@ -24,6 +22,7 @@
             type="text"
             placeholder="Cari berdasarkan nama izin..."
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="applyFilters"
           />
         </div>
         
@@ -32,6 +31,7 @@
           <select
             v-model="selectedRole"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @change="applyFilters"
           >
             <option value="">Semua Role</option>
             <option v-for="role in roles" :key="role.id" :value="role.id">
@@ -42,10 +42,10 @@
         
         <div class="flex items-end">
           <button
-            @click="applyFilters"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            @click="resetFilters"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2"
           >
-            Terapkan Filter
+            Reset
           </button>
         </div>
       </div>
@@ -72,7 +72,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="permission in filteredPermissions" :key="permission.id">
+            <tr v-for="permission in paginatedPermissions" :key="permission.id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">{{ permission.name }}</div>
                 <div class="text-sm text-gray-500">{{ permission.code }}</div>
@@ -94,25 +94,21 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div class="flex space-x-2">
-                  <PermissionGuard permission="edit_permission">
-                    <button
-                      @click="editPermission(permission)"
-                      class="text-yellow-600 hover:text-yellow-900"
-                      title="Edit"
-                    >
-                      <PencilIcon class="w-5 h-5" />
-                    </button>
-                  </PermissionGuard>
+                  <button
+                    @click="editPermission(permission)"
+                    class="text-yellow-600 hover:text-yellow-900"
+                    title="Edit"
+                  >
+                    <PencilIcon class="w-5 h-5" />
+                  </button>
                   
-                  <PermissionGuard permission="delete_permission">
-                    <button
-                      @click="confirmDelete(permission)"
-                      class="text-red-600 hover:text-red-900"
-                      title="Hapus"
-                    >
-                      <TrashIcon class="w-5 h-5" />
-                    </button>
-                  </PermissionGuard>
+                  <button
+                    @click="confirmDelete(permission)"
+                    class="text-red-600 hover:text-red-900"
+                    title="Hapus"
+                  >
+                    <TrashIcon class="w-5 h-5" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -196,21 +192,23 @@
       <template #body>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Nama Izin</label>
+            <label class="block text-sm font-medium text-gray-700">Nama Izin*</label>
             <input
               v-model="form.name"
               type="text"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              :class="{'border-red-500': errors.name}"
             />
             <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700">Kode Izin</label>
+            <label class="block text-sm font-medium text-gray-700">Kode Izin*</label>
             <input
               v-model="form.code"
               type="text"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              :class="{'border-red-500': errors.code}"
             />
             <p v-if="errors.code" class="mt-1 text-sm text-red-600">{{ errors.code }}</p>
           </div>
@@ -256,8 +254,16 @@
           type="button"
           @click="submitForm"
           class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          :disabled="isSubmitting"
         >
-          {{ showAddModal ? 'Simpan' : 'Update' }}
+          <span v-if="isSubmitting">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Memproses...
+          </span>
+          <span v-else>{{ showAddModal ? 'Simpan' : 'Update' }}</span>
         </button>
       </template>
     </Modal>
@@ -278,23 +284,24 @@
       </template>
       
       <template #button>
-        Hapus
+        <span v-if="isDeleting">
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Menghapus...
+        </span>
+        <span v-else>Hapus</span>
       </template>
     </ConfirmationModal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { PlusIcon, PencilIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
-
-definePageMeta({
-  middleware: () => {
-    // Add your middleware logic here
-    // Example: Check authentication or permissions
-  },
-  requiredPermission: 'view_permissions'
-})
+import ConfirmationModal from '@/components/ConfirmationModal.vue'
+import Modal from '../../components/Modal.vue'
 
 interface Permission {
   id: string
@@ -341,6 +348,10 @@ const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 const permissionToDelete = ref<Permission | null>(null)
 
+// Loading states
+const isSubmitting = ref(false)
+const isDeleting = ref(false)
+
 // Computed
 const filteredPermissions = computed(() => {
   let result = permissions.value
@@ -362,32 +373,16 @@ const filteredPermissions = computed(() => {
     )
   }
   
-  // Pagination
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return result.slice(start, end)
+  return result
 })
 
-const totalItems = computed(() => {
-  let result = permissions.value
-  
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(p => 
-      p.name.toLowerCase().includes(query) || 
-      p.code.toLowerCase().includes(query) ||
-      p.description.toLowerCase().includes(query)
-    )
-  }
-  
-  if (selectedRole.value) {
-    result = result.filter(p => 
-      p.roles.some(r => r.id === selectedRole.value)
-    )
-  }
-  
-  return result.length
+const paginatedPermissions = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredPermissions.value.slice(start, end)
 })
+
+const totalItems = computed(() => filteredPermissions.value.length)
 
 const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
 
@@ -432,66 +427,91 @@ const applyFilters = () => {
   currentPage.value = 1
 }
 
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedRole.value = ''
+  currentPage.value = 1
+}
+
+const openAddModal = () => {
+  resetForm()
+  showAddModal.value = true
+}
+
 const fetchPermissions = async () => {
-  // Simulasi API call
-  permissions.value = [
-    {
-      id: '1',
-      name: 'Lihat Pengguna',
-      code: 'view_users',
-      description: 'Izin untuk melihat daftar pengguna',
-      roles: [
-        { id: '1', name: 'Admin' },
-        { id: '2', name: 'Editor' }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Tambah Pengguna',
-      code: 'create_users',
-      description: 'Izin untuk menambahkan pengguna baru',
-      roles: [
-        { id: '1', name: 'Admin' }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Edit Pengguna',
-      code: 'edit_users',
-      description: 'Izin untuk mengedit data pengguna',
-      roles: [
-        { id: '1', name: 'Admin' },
-        { id: '2', name: 'Editor' }
-      ]
-    },
-    {
-      id: '4',
-      name: 'Hapus Pengguna',
-      code: 'delete_users',
-      description: 'Izin untuk menghapus pengguna',
-      roles: [
-        { id: '1', name: 'Admin' }
-      ]
-    },
-    {
-      id: '5',
-      name: 'Kelola Izin',
-      code: 'manage_permissions',
-      description: 'Izin untuk mengelola hak akses',
-      roles: [
-        { id: '1', name: 'Admin' }
-      ]
-    }
-  ]
+  try {
+    // Simulated API call
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    permissions.value = [
+      {
+        id: '1',
+        name: 'Lihat Pengguna',
+        code: 'view_users',
+        description: 'Izin untuk melihat daftar pengguna',
+        roles: [
+          { id: '1', name: 'Admin' },
+          { id: '2', name: 'Editor' }
+        ]
+      },
+      {
+        id: '2',
+        name: 'Tambah Pengguna',
+        code: 'create_users',
+        description: 'Izin untuk menambahkan pengguna baru',
+        roles: [
+          { id: '1', name: 'Admin' }
+        ]
+      },
+      {
+        id: '3',
+        name: 'Edit Pengguna',
+        code: 'edit_users',
+        description: 'Izin untuk mengedit data pengguna',
+        roles: [
+          { id: '1', name: 'Admin' },
+          { id: '2', name: 'Editor' }
+        ]
+      },
+      {
+        id: '4',
+        name: 'Hapus Pengguna',
+        code: 'delete_users',
+        description: 'Izin untuk menghapus pengguna',
+        roles: [
+          { id: '1', name: 'Admin' }
+        ]
+      },
+      {
+        id: '5',
+        name: 'Kelola Izin',
+        code: 'manage_permissions',
+        description: 'Izin untuk mengelola hak akses',
+        roles: [
+          { id: '1', name: 'Admin' }
+        ]
+      }
+    ]
+  } catch (error) {
+    console.error('Gagal mengambil data izin:', error)
+    showToast('Gagal memuat data izin', 'error')
+  }
 }
 
 const fetchRoles = async () => {
-  // Simulasi API call
-  roles.value = [
-    { id: '1', name: 'Admin' },
-    { id: '2', name: 'Editor' },
-    { id: '3', name: 'Viewer' }
-  ]
+  try {
+    // Simulated API call
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    roles.value = [
+      { id: '1', name: 'Admin' },
+      { id: '2', name: 'Editor' },
+      { id: '3', name: 'Viewer' }
+    ]
+  } catch (error) {
+    console.error('Gagal mengambil data role:', error)
+    showToast('Gagal memuat data role', 'error')
+  }
 }
 
 const editPermission = (permission: Permission) => {
@@ -513,16 +533,36 @@ const confirmDelete = (permission: Permission) => {
 const deletePermission = async () => {
   if (!permissionToDelete.value) return
   
-  // Simulasi API call untuk delete
-  permissions.value = permissions.value.filter(p => p.id !== permissionToDelete.value?.id)
+  isDeleting.value = true
   
-  showDeleteModal.value = false
-  permissionToDelete.value = null
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    permissions.value = permissions.value.filter(p => p.id !== permissionToDelete.value?.id)
+    showToast('Izin berhasil dihapus', 'success')
+    
+    showDeleteModal.value = false
+    permissionToDelete.value = null
+    
+    if (paginatedPermissions.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
+  } catch (error) {
+    console.error('Gagal menghapus izin:', error)
+    showToast('Gagal menghapus izin', 'error')
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 const closeModal = () => {
   showAddModal.value = false
   showEditModal.value = false
+  resetForm()
+}
+
+const resetForm = () => {
   form.value = {
     name: '',
     code: '',
@@ -555,32 +595,57 @@ const validateForm = () => {
 const submitForm = async () => {
   if (!validateForm()) return
   
-  if (showAddModal.value) {
-    // Simulasi API call untuk create
-    const newPermission: Permission = {
-      id: Date.now().toString(),
-      name: form.value.name,
-      code: form.value.code,
-      description: form.value.description,
-      roles: roles.value.filter(r => form.value.roles.includes(r.id))
-    }
-    permissions.value.unshift(newPermission)
-  } else {
-    // Simulasi API call untuk update
-    const index = permissions.value.findIndex(p => p.id === form.value.id)
-    if (index !== -1) {
-      permissions.value[index] = {
-        ...permissions.value[index],
+  isSubmitting.value = true
+  
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    if (showAddModal.value) {
+      const newPermission: Permission = {
+        id: Date.now().toString(),
         name: form.value.name,
         code: form.value.code,
         description: form.value.description,
-        roles: roles.value.filter(r => form.value.roles.includes(r.id))
+        roles: roles.value.filter(r => form.value.roles.includes(r.id)).map(r => ({ id: r.id, name: r.name }))
+      }
+      permissions.value.unshift(newPermission)
+      showToast('Izin berhasil ditambahkan', 'success')
+    } else {
+      const index = permissions.value.findIndex(p => p.id === form.value.id)
+      if (index !== -1) {
+        permissions.value[index] = {
+          ...permissions.value[index],
+          name: form.value.name,
+          code: form.value.code,
+          description: form.value.description,
+          roles: roles.value.filter(r => form.value.roles.includes(r.id)).map(r => ({ id: r.id, name: r.name }))
+        }
+        showToast('Izin berhasil diperbarui', 'success')
       }
     }
+    
+    closeModal()
+  } catch (error) {
+    console.error('Gagal menyimpan izin:', error)
+    showToast('Gagal menyimpan izin', 'error')
+  } finally {
+    isSubmitting.value = false
   }
-  
-  closeModal()
 }
+
+const showToast = (message: string, type: 'success' | 'error') => {
+  // In a real app, use a toast library like vue-toastification
+  console.log(`${type.toUpperCase()}: ${message}`)
+  // Example: this.$toast[type](message)
+}
+
+// Watch for changes in filtered data and adjust current page if needed
+watch(filteredPermissions, () => {
+  if (paginatedPermissions.value.length === 0 && currentPage.value > 1) {
+    currentPage.value = Math.max(1, totalPages.value)
+  }
+})
 
 // Lifecycle
 onMounted(() => {
@@ -593,3 +658,46 @@ definePageMeta({
   title: 'Manajemen Izin Akses'
 })
 </script>
+
+<style scoped>
+.container {
+  max-width: 1200px;
+}
+
+.bg-white {
+  background-color: #fff;
+}
+
+.text-gray-800 {
+  color: #1e293b;
+}
+
+.text-gray-500 {
+  color: #64748b;
+}
+
+.text-gray-700 {
+  color: #334155;
+}
+
+.text-gray-900 {
+  color: #0f172a;
+}
+
+.border-red-500 {
+  border-color: #ef4444;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

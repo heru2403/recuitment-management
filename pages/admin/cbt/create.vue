@@ -1,166 +1,196 @@
 <template>
-  <div class="create-test">
-    <h2>Create New Test</h2>
-    
-    <form @submit.prevent="submitTest">
-      <div class="form-group">
-        <label for="title">Test Title</label>
-        <input type="text" id="title" v-model="test.title" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" v-model="test.description" rows="3"></textarea>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="duration">Duration (minutes)</label>
-          <input type="number" id="duration" v-model="test.duration" min="1" required>
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">Create New Test</h1>
+      <NuxtLink
+        to="/admin/cbt"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        <ArrowLeftIcon class="-ml-1 mr-2 h-5 w-5" />
+        Back to Tests
+      </NuxtLink>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <form @submit.prevent="submitTest">
+        <div class="space-y-6 p-6">
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700">Test Title *</label>
+            <input
+              id="title"
+              v-model="test.title"
+              type="text"
+              required
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+          </div>
+
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              id="description"
+              v-model="test.description"
+              rows="3"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="duration" class="block text-sm font-medium text-gray-700">Duration (minutes) *</label>
+              <input
+                id="duration"
+                v-model.number="test.duration"
+                type="number"
+                min="1"
+                required
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+            </div>
+
+            <div>
+              <label for="passing_score" class="block text-sm font-medium text-gray-700">Passing Score (%)</label>
+              <input
+                id="passing_score"
+                v-model.number="test.passing_score"
+                type="number"
+                min="0"
+                max="100"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="relative flex items-start">
+              <div class="flex items-center h-5">
+                <input
+                  id="require_camera"
+                  v-model="test.require_camera"
+                  type="checkbox"
+                  class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                >
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="require_camera" class="font-medium text-gray-700">Require camera monitoring during test</label>
+                <p class="text-gray-500">Candidate's webcam will be activated during the test</p>
+              </div>
+            </div>
+
+            <div class="relative flex items-start">
+              <div class="flex items-center h-5">
+                <input
+                  id="randomize_questions"
+                  v-model="test.randomize_questions"
+                  type="checkbox"
+                  class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                >
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="randomize_questions" class="font-medium text-gray-700">Randomize question order</label>
+                <p class="text-gray-500">Questions will appear in random order for each candidate</p>
+              </div>
+            </div>
+
+            <div class="relative flex items-start">
+              <div class="flex items-center h-5">
+                <input
+                  id="is_active"
+                  v-model="test.is_active"
+                  type="checkbox"
+                  class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                >
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="is_active" class="font-medium text-gray-700">Activate test immediately</label>
+                <p class="text-gray-500">Test will be available to candidates right away</p>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div class="form-group">
-          <label for="passing_score">Passing Score (%)</label>
-          <input type="number" id="passing_score" v-model="test.passing_score" min="1" max="100">
+
+        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+          <button
+            type="button"
+            @click="$router.push('/admin/cbt')"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <SpinnerIcon v-if="loading" class="animate-spin -ml-1 mr-2 h-4 w-4" />
+            <SaveIcon v-else class="-ml-1 mr-2 h-4 w-4" />
+            Create Test
+          </button>
         </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="test.require_camera"> Require camera during test
-        </label>
-      </div>
-      
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="test.is_active"> Activate test immediately
-        </label>
-      </div>
-      
-      <div class="form-actions">
-        <nuxt-link to="/admin/cbt" class="cancel-btn">Cancel</nuxt-link>
-        <button type="submit" :disabled="loading">
-          {{ loading ? 'Creating...' : 'Create Test' }}
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </template>
 
-<script>
-export default {
-  middleware: 'admin-auth',
-  data() {
-    return {
-      test: {
-        title: '',
-        description: '',
-        duration: 60,
-        passing_score: 60,
-        require_camera: false,
-        is_active: false
-      },
-      loading: false
+<script lang="ts" setup>
+import { ArrowLeftIcon, ScaleIcon } from '@heroicons/vue/24/outline'
+import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
+
+interface TestForm {
+  title: string
+  description: string
+  duration: number
+  passing_score?: number
+  require_camera: boolean
+  randomize_questions: boolean
+  is_active: boolean
+}
+
+const test = reactive<TestForm>({
+  title: '',
+  description: '',
+  duration: 60,
+  passing_score: 60,
+  require_camera: false,
+  randomize_questions: true,
+  is_active: false
+})
+
+const loading = ref(false)
+
+async function submitTest() {
+  try {
+    loading.value = true
+    interface CreatedTestResponse {
+      id: number | string
+      // add other properties if needed
     }
-  },
-  methods: {
-    async submitTest() {
-      this.loading = true;
-      try {
-        const response = await this.$axios.post('/api/admin/tests', this.test);
-        this.$router.push(`/admin/cbt/${response.data.id}/questions`);
-      } catch (error) {
-        console.error('Error creating test:', error);
-      } finally {
-        this.loading = false;
-      }
-    }
+    const { data } = await useFetch<CreatedTestResponse>('/api/admin/tests', {
+      method: 'POST',
+      body: test
+    })
+    
+    useToast().success('Test created successfully')
+    await navigateTo(`/admin/cbt/${data.value?.id}/questions`)
+  } catch (error) {
+    console.error('Error creating test:', error)
+    useToast().error('Failed to create test')
+  } finally {
+    loading.value = false
   }
 }
+
+function useToast() {
+  return {
+    success: (msg: string) => { console.log('Success:', msg) },
+    error: (msg: string) => { console.error('Error:', msg) }
+  }
+}
+
+definePageMeta({
+  layout: 'admin',
+  title: 'Create Test',
+})
+
+
 </script>
-
-<style scoped>
-.create-test {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-h2 {
-  margin-bottom: 20px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.form-group textarea {
-  min-height: 80px;
-}
-
-.form-row {
-  display: flex;
-  gap: 20px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: normal;
-  cursor: pointer;
-}
-
-.checkbox-label input {
-  margin: 0;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 30px;
-}
-
-.form-actions .cancel-btn {
-  padding: 8px 16px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  text-decoration: none;
-  color: #333;
-}
-
-.form-actions button {
-  padding: 8px 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.form-actions button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-</style>

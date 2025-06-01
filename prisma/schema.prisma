@@ -1,0 +1,107 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  HOLIDAY
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  PENDING_REVIEW
+  COMPLETED
+}
+
+model User {
+  id              String      @id @default(uuid())
+  email           String      @unique
+  password        String
+  name            String
+  position        String
+  department      String
+  employeeId      String      @unique
+  joinDate        DateTime
+  phone           String?
+  avatar          String?
+  status          String      @default("ACTIVE")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  attendance      Attendance[]
+  tasks           Task[]
+  payrolls        Payroll[]
+  emergencyContact EmergencyContact?
+  bankInfo        BankInfo?
+}
+
+model EmergencyContact {
+  id          String   @id @default(uuid())
+  name        String
+  relationship String
+  phone       String
+  email       String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+}
+
+model BankInfo {
+  id             String   @id @default(uuid())
+  bankName       String
+  accountNumber  String
+  accountHolder  String
+  branch         String?
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @unique
+}
+
+model Attendance {
+  id        String      @id @default(uuid())
+  date      DateTime
+  checkIn   DateTime?
+  checkOut  DateTime?
+  status    AttendanceStatus
+  hours     Float?
+  notes     String?
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([userId, date])
+}
+
+model Task {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus
+  dueDate     DateTime?
+  priority    String?
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Payroll {
+  id          String      @id @default(uuid())
+  amount      Float
+  paymentDate DateTime
+  periodStart DateTime
+  periodEnd   DateTime
+  details     Json?
+  user        User        @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
